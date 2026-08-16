@@ -66,7 +66,7 @@ function build_android {
     if [ ! -f $TRIPLE/libunwind.a ]; then
         mkdir -p $TRIPLE
         cd $TRIPLE
-        cmake -Wno-dev -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
+        cmake -Wno-dev -DCMAKE_POLICY_VERSION_MINIMUM=3.5 -DCMAKE_TOOLCHAIN_FILE=$NDK/build/cmake/android.toolchain.cmake \
             -DANDROID_NDK=$NDK -DANDROID_ABI=$ABI -DANDROID_PLATFORM=android-$NDK_API ../cmake
         make
         cd ..
@@ -77,7 +77,7 @@ function build_android {
 
 
     CFLAGS+=" -g -Werror -Wall -Wextra -Wno-unused-parameter -Wno-unused-variable -Werror=shadow -Wfatal-errors \
-      -Wstack-exhausted -Wstack-protector -Wframe-larger-than=131072 \
+      -Wno-unknown-warning-option -Wstack-exhausted -Wstack-protector -Wframe-larger-than=131072 \
       -fPIC -fblocks -fdata-sections -ffunction-sections \
       -std=gnu2x -D__FAVOR_BSD -D_BSD_SOURCE -D_DEFAULT_SOURCE -DANDROID"
     #-fvisibility=hidden -fvisibility-inlines-hidden -flto \
@@ -102,7 +102,7 @@ function build_android {
         $CC $CFLAGS $LIBUTP_CFLAGS $LIBEVENT_CFLAGS $LIBSODIUM_CFLAGS $LIBBLOCKSRUNTIME_CFLAGS $LIBUNWIND_CFLAGS $PARSON_CFLAGS -c $file
     done
     #$CC $CFLAGS -shared -Wl,--version-script=android_export_list -o libnewnode.so *.o -lm -llog $LIBUTP $LIBEVENT $LIBSODIUM $LIBBLOCKSRUNTIME $LIBUNWIND
-    $CC $CFLAGS -shared -o libnewnode.so *.o -lm -llog $LIBUTP $LIBEVENT $LIBSODIUM $LIBBLOCKSRUNTIME $LIBUNWIND -Wl,--wrap=bind -Wl,--wrap=connect -Wl,--wrap=sendto
+    $CC $CFLAGS -shared -o libnewnode.so *.o -lm -llog $LIBUTP $LIBEVENT $LIBSODIUM $LIBBLOCKSRUNTIME $LIBUNWIND -Wl,-z,max-page-size=16384 -Wl,-z,common-page-size=16384 -Wl,--wrap=bind -Wl,--wrap=connect -Wl,--wrap=sendto
     # -fuse-ld=gold
     OUT=android/src/main/jniLibs/$ABI
     test -d $OUT || mkdir -p $OUT
