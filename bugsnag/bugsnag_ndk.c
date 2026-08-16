@@ -533,12 +533,21 @@ void bugsnag_set_user(char *id, char *email, char *name) {
 
 void bugsnag_add_breadcrumb(bsg_breadcrumb* crumb)
 {
+    // Bugsnag may be intentionally uninitialized (host app disables it); the native
+    // report is then NULL. Skip instead of dereferencing NULL and crashing.
+    if (g_bugsnag_report == NULL) {
+        return;
+    }
     pthread_mutex_lock(&bsg_lock);
     bugsnag_event_add_breadcrumb(g_bugsnag_report->event, crumb);
     pthread_mutex_unlock(&bsg_lock);
 }
 
 void bugsnag_leave_breadcrumb_env(JNIEnv *env, char *name, bsg_breadcrumb_t type) {
+
+    if (g_bugsnag_report == NULL) {
+        return;
+    }
 
     time_t rawtime;
     time ( &rawtime );

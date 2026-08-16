@@ -123,6 +123,13 @@ JNIEXPORT void JNICALL Java_com_clostra_newnode_internal_NewNode_updateBugsnagDe
 
 void bugsnag_leave_breadcrumb_log(const char *buf)
 {
+    // Skip when Bugsnag is intentionally uninitialized (host app disables it), otherwise
+    // this builds a breadcrumb that bugsnag_add_breadcrumb would drop, and the native
+    // report is NULL (would crash).
+    extern struct bugsnag_ndk_report *g_bugsnag_report;
+    if (g_bugsnag_report == NULL) {
+        return;
+    }
     bsg_breadcrumb *crumb = bugsnag_breadcrumb_init("newnode", BSG_CRUMB_LOG);
     bugsnag_breadcrumb_add_metadata(crumb, "stdout", (char*)buf);
     bugsnag_add_breadcrumb(crumb);

@@ -59,7 +59,7 @@ public class NewNode implements NewNodeInternal, Runnable, Application.ActivityL
 
     static Thread t;
     //static Thread updateThread;
-    static boolean requestPermission = true;
+    static boolean requestPermission = false;
     static NearbyHelper nearbyHelper;
     static Bluetooth bluetooth;
     static Client bugsnagClient;
@@ -269,21 +269,10 @@ public class NewNode implements NewNodeInternal, Runnable, Application.ActivityL
     }
 
     void bugsnagClientInit() {
-        Configuration config = new Configuration("141ea25aa72c276c49d3a154b82f2b1f");
-        config.setAppVersion(VERSION);
-        config.setBuildUUID(VERSION);
-        config.setSendThreads(true);
-        config.setPersistUserBetweenSessions(true);
-        config.setAutoCaptureSessions(true);
-        config.setEnableExceptionHandler(true);
-
-        bugsnagClient = new Client(app(), config);
-        bugsnagClient.setProjectPackages("com.clostra.newnode");
-        //bugsnagClient.setLoggingEnabled(true);
-        NativeInterface.setClient(bugsnagClient);
-
-        bugsnagClient.addObserver(new BugsnagObserver());
-        updateBugsnagDetails(NotifyType.ALL.getValue());
+        // Disabled: Bugsnag 4.7.0's Client registers a BroadcastReceiver without
+        // RECEIVER_EXPORTED/RECEIVER_NOT_EXPORTED, which throws a SecurityException and
+        // crashes the app on targetSdk >= 34 (Android 14+). newnode's networking does not
+        // depend on Bugsnag; host app crash reporting is handled separately (Crashlytics).
     }
 
     void displayStats(String type, long direct, long peers) {
