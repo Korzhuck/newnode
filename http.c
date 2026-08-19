@@ -230,6 +230,11 @@ uint64 utp_on_accept(utp_callback_arguments *a)
     }
     //debug("%s %p %s\n", __func__, a->socket, sockaddr_str((const sockaddr*)&addr));
     bufferevent *bev = bufferevent_utp_new(n->evbase, n->utp, a->socket, BEV_OPT_CLOSE_ON_FREE);
+    if (!bev) {
+        debug("%s bufferevent_utp_new failed\n", __func__);
+        utp_close(a->socket);
+        return 0;
+    }
     evhttp_connection *evcon = evhttp_get_request(n->http, EVUTIL_INVALID_SOCKET, (sockaddr *)&addr, addrlen, bev);
     if (!evcon) {
         debug("%s evhttp_get_request failed\n", __func__);

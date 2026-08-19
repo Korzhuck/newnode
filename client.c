@@ -3362,7 +3362,9 @@ void connect_request(connect_req *c, const char *host, port_t port)
 
             update_tryfirst_stats(n, tfs, req.flags, req_time, result, c->host);
 
-            assert(c->direct);
+            if (!c->direct) {
+                return;
+            }
             if (!c->direct_connect_responded) {
                 debug("c:%p (%.2fms) %s try first ok; SYN-ACK not yet received from %s; not spliced yet\n",
                       c, rdelta(c), c->tryfirst_url, c->host);
@@ -3916,7 +3918,7 @@ void query_ipinfo(network *n)
         uint64_t xfer_time_us = us_clock() - req_time;
         debug("GET https://ipinfo.io success:%d, response_length:%zu, https_error:%d duration:%f s\n",
               success, result->body_length, result->https_error, xfer_time_us / 1000000.0);
-        if (!success || result->flags & HTTPS_RESULT_TRUNCATED || result->body_length == IPINFO_RESPONSE_SIZE) {
+        if (!success || !result->body || result->flags & HTTPS_RESULT_TRUNCATED || result->body_length == IPINFO_RESPONSE_SIZE) {
             debug("https://ipinfo.io => success:%d response_length:%zu https_error:%d\n",
                   success, result->body_length, result->https_error);
             return;
